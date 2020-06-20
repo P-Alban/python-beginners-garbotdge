@@ -174,7 +174,9 @@ def captcha_handler(call):
     distinct_key = new_users.build_distinct_key(call.message)
     if not config.r.exists(distinct_key):
         return  # captcha message doesn't exists
-    config.r.srem(distinct_key, user_id)
+    user_belong_to_this_captcha = config.r.srem(distinct_key, user_id)
+    if not user_belong_to_this_captcha:
+        return bot.answer_callback_query(call.id, text="Это сообщение не для тебя.")
     restricted_users_left = config.r.scard(distinct_key)
     if not restricted_users_left:
         # if not users left for current captcha, remove captcha message
